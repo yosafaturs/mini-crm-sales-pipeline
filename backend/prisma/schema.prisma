@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN_MANAGER
+  SALES_EXECUTIVE
+}
+
+enum DealStage {
+  LEAD_ACQUIRED
+  CONTACTED
+  PROPOSAL_SENT
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum InteractionType {
+  CALL
+  EMAIL
+  MEETING
+  NOTE
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String
+  role          Role
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  dealsAssigned Deal[]   @relation("AssignedDeals")
+  dealsCreated  Deal[]   @relation("CreatedDeals")
+  interactions  InteractionLog[]
+}
+
+model Deal {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  value         Float     // positive decimal, stored as float
+  stage         DealStage @default(LEAD_ACQUIRED)
+  assignedUserId String?  @map("assigned_user_id")
+  createdById   String    @map("created_by_id")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  assignedUser  User?     @relation("AssignedDeals", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  createdBy     User      @relation("CreatedDeals", fields: [createdById], references: [id])
+  interactions  InteractionLog[]
+
+  @@index([stage])
+  @@index([assignedUserId])
+}
+
+model InteractionLog {
+  id          String         @id @default(cuid())
+  dealId      String         @map("deal_id")
+  type        InteractionType
+  notes       String?
+  date        DateTime       @default(now())
+  createdById String         @map("created_by_id")
+  createdAt   DateTime       @default(now())
+
+  deal        Deal           @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  createdBy   User           @relation(fields: [createdById], references: [id])
+
+  @@index([dealId])
+  @@index([createdAt])
+}
