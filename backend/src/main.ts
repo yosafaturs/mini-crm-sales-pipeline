@@ -6,17 +6,16 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // KONFIGURASI CORS
+  // CORS dengan daftar origin yang benar
   app.enableCors({
     origin: [
       'https://mini-crm-sales-pipeline.vercel.app',
       'https://mini-crm-sales-pipeline-ovmg.vercel.app',
       'http://localhost:3000'
     ],
-    credentials: true, // WAJIB!
+    credentials: true,
   });
 
-  // COOKIE PARSER DENGAN CONFIG
   app.use(cookieParser());
 
   app.useGlobalPipes(
@@ -29,6 +28,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`🚀 Mini CRM Backend running on http://localhost:${port}`);
+  console.log(`🚀 Mini CRM Backend running on port ${port}`);
 }
 bootstrap();

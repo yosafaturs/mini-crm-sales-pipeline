@@ -15,13 +15,13 @@ export class AuthController {
 
   private setJwtCookie(res: Response, token: string) {
     const isSecure = this.configService.get<string>('COOKIE_SECURE') === 'true';
-    res.cookie('jwt', token, {
-      httpOnly: true,
-      secure: false, // PASTIKAN false untuk testing (atau true jika pakai HTTPS)
-      sameSite: 'lax', // GANTI DARI 'strict'
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      domain: '.vercel.app' // TAMBAHKAN INI AGAR COOKIE DITERIMA DI SEMUA SUBDOMAIN VERCEL
-    });
+    res.cookie('token', token, {
+  httpOnly: true,
+  secure: false,      // Biarkan false untuk testing lintas domain
+  sameSite: 'lax',    // Ganti dari 'strict'
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  domain: '.vercel.app',  // Agar cookie dikenali di semua subdomain Vercel
+});
   }
 
   @Public()
