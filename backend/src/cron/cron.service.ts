@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../prisma/prisma.service';
-import { DealStage } from '@prisma/client';
 
 @Injectable()
 export class CronService {
@@ -22,11 +21,11 @@ export class CronService {
     fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
 
     try {
-      // Find all deals NOT closed
+      // Find all deals NOT closed (using string literals instead of enum)
       const activeDeals = await this.prisma.deal.findMany({
         where: {
           stage: {
-            notIn: [DealStage.CLOSED_WON, DealStage.CLOSED_LOST],
+            notIn: ['CLOSED_WON', 'CLOSED_LOST'] as any[],
           },
         },
         include: {
@@ -38,7 +37,7 @@ export class CronService {
         },
       });
 
-      const staleDeals = [];
+      const staleDeals: any[] = [];
 
       for (const deal of activeDeals) {
         const lastInteraction = deal.interactions[0];
@@ -73,7 +72,7 @@ export class CronService {
         staleCount: staleDeals.length,
         staleDeals,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error('Error executing Stale Deals cron job', error.stack);
       throw error;
     }

@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { Role } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +25,7 @@ export class AuthService {
         email: dto.email,
         name: dto.name || dto.email.split('@')[0],
         passwordHash,
-        role: dto.role || Role.SALES_EXECUTIVE,
+        role: (dto.role || 'SALES_EXECUTIVE') as any,
       },
       select: { id: true, email: true, name: true, role: true, createdAt: true },
     });

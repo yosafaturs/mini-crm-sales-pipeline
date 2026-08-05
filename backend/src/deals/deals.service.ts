@@ -1,8 +1,16 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDealDto, UpdateDealDto, UpdateDealStageDto, AssignDealDto } from './dto/deal.dto';
-import { Role, DealStage } from '@prisma/client';
 import { SocketGateway } from '../socket/socket.gateway';
+
+const DEAL_STAGES = [
+  'LEAD_ACQUIRED',
+  'CONTACTED',
+  'PROPOSAL_SENT',
+  'NEGOTIATION',
+  'CLOSED_WON',
+  'CLOSED_LOST',
+];
 
 @Injectable()
 export class DealsService {
@@ -11,9 +19,9 @@ export class DealsService {
     private socketGateway: SocketGateway,
   ) {}
 
-  async findAll(user: { id: string; role: Role }) {
+  async findAll(user: { id: string; role: string }) {
     const whereCondition =
-      user.role === Role.ADMIN_MANAGER
+      user.role === 'ADMIN_MANAGER'
         ? {}
         : { assignedUserId: user.id };
 
@@ -28,7 +36,7 @@ export class DealsService {
     });
   }
 
-  async findOne(id: string, user: { id: string; role: Role }) {
+  async findOne(id: string, user: { id: string; role: string }) {
     const deal = await this.prisma.deal.findUnique({
       where: { id },
       include: {
@@ -45,16 +53,16 @@ export class DealsService {
       throw new NotFoundException(`Deal with ID ${id} not found`);
     }
 
-    if (user.role !== Role.ADMIN_MANAGER && deal.assignedUserId !== user.id) {
+    if (user.role !== 'ADMIN_MANAGER' && deal.assignedUserId !== user.id) {
       throw new ForbiddenException('You do not have permission to view this deal');
     }
 
     return deal;
   }
 
-  async create(dto: CreateDealDto, user: { id: string; role: Role }) {
+  async create(dto: CreateDealDto, user: { id: string; role: string }) {
     const assignedUserId =
-      user.role === Role.ADMIN_MANAGER && dto.assignedUserId
+      user.role === 'ADMIN_MANAGER' && dto.assignedUserId
         ? dto.assignedUserId
         : user.id;
 
@@ -63,7 +71,7 @@ export class DealsService {
         title: dto.title,
         description: dto.description,
         value: dto.value,
-        stage: dto.stage || DealStage.LEAD_ACQUIRED,
+        stage: (dto.stage as any) || 'LEAD_ACQUIRED',
         assignedUserId,
         createdById: user.id,
       },
@@ -77,19 +85,19 @@ export class DealsService {
     return deal;
   }
 
-  async updateStage(id: string, dto: UpdateDealStageDto, user: { id: string; role: Role }) {
+  async updateStage(id: string, dto: UpdateDealStageDto, user: { id: string; role: string }) {
     const existing = await this.prisma.deal.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException(`Deal with ID ${id} not found`);
     }
 
-    if (user.role !== Role.ADMIN_MANAGER && existing.assignedUserId !== user.id) {
+    if (user.role !== 'ADMIN_MANAGER' && existing.assignedUserId !== user.id) {
       throw new ForbiddenException('You do not have permission to modify this deal');
     }
 
     const updated = await this.prisma.deal.update({
       where: { id },
-      data: { stage: dto.stage },
+      data: { stage: dto.stage as any },
       include: {
         assignedUser: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true, email: true } },
@@ -100,20 +108,20 @@ export class DealsService {
     return updated;
   }
 
-  async update(id: string, dto: UpdateDealDto, user: { id: string; role: Role }) {
+  async update(id: string, dto: UpdateDealDto, user: { id: string; role: string }) {
     const existing = await this.prisma.deal.findUnique({ where: { id } });
     if (!existing) {
       throw new NotFoundException(`Deal with ID ${id} not found`);
     }
 
-    if (user.role !== Role.ADMIN_MANAGER && existing.assignedUserId !== user.id) {
+    if (user.role !== 'ADMIN_MANAGER' && existing.assignedUserId !== user.id) {
       throw new ForbiddenException('You do not have permission to modify this deal');
     }
 
     // Only Admin Manager can reassign deal
     let assignedUserId = existing.assignedUserId;
     if (dto.assignedUserId !== undefined) {
-      if (user.role === Role.ADMIN_MANAGER) {
+      if (user.role === 'ADMIN_MANAGER') {
         assignedUserId = dto.assignedUserId;
       } else {
         throw new ForbiddenException('Only ADMIN_MANAGER can re-assign deal ownership');
@@ -126,7 +134,7 @@ export class DealsService {
         title: dto.title ?? existing.title,
         description: dto.description ?? existing.description,
         value: dto.value ?? existing.value,
-        stage: dto.stage ?? existing.stage,
+        stage: dto.stage ? (dto.stage as any) : existing.stage,
         assignedUserId,
       },
       include: {
@@ -153,9 +161,9 @@ export class DealsService {
     return deal;
   }
 
-  async getStageMetrics(user: { id: string; role: Role }) {
+  async getStageMetrics(user: { id: string; role: string }) {
     const whereCondition =
-      user.role === Role.ADMIN_MANAGER
+      user.role === 'ADMIN_MANAGER'
         ? {}
         : { assignedUserId: user.id };
 
@@ -166,15 +174,15 @@ export class DealsService {
       _count: { id: true },
     });
 
-    const stages = Object.values(DealStage);
     const metrics: Record<string, { totalValue: number; count: number }> = {};
 
-    stages.forEach((stage) => {
+    DEAL_STAGES.forEach((stage) => {
       metrics[stage] = { totalValue: 0, count: 0 };
     });
 
     stageAggregations.forEach((item) => {
-      metrics[item.stage] = {
+      const stageKey = item.stage as string;
+      metrics[stageKey] = {
         totalValue: item._sum.value || 0,
         count: item._count.id || 0,
       };

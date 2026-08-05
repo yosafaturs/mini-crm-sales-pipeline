@@ -1,5 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsEnum, IsString, Min } from 'class-validator';
-import { DealStage } from '@prisma/client';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateDealDto {
   @IsNotEmpty()
@@ -16,8 +15,8 @@ export class CreateDealDto {
   value: number;
 
   @IsOptional()
-  @IsEnum(DealStage)
-  stage?: DealStage;
+  @IsString()
+  stage?: string;
 
   @IsOptional()
   @IsString()
@@ -39,8 +38,8 @@ export class UpdateDealDto {
   value?: number;
 
   @IsOptional()
-  @IsEnum(DealStage)
-  stage?: DealStage;
+  @IsString()
+  stage?: string;
 
   @IsOptional()
   @IsString()
@@ -49,8 +48,8 @@ export class UpdateDealDto {
 
 export class UpdateDealStageDto {
   @IsNotEmpty()
-  @IsEnum(DealStage)
-  stage: DealStage;
+  @IsString()
+  stage: string;
 }
 
 export class AssignDealDto {

@@ -1,10 +1,9 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
-import { InteractionType } from '@prisma/client';
+import { IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
 
 export class CreateInteractionDto {
   @IsNotEmpty()
-  @IsEnum(InteractionType)
-  type: InteractionType;
+  @IsString()
+  type: string;
 
   @IsOptional()
   @IsString()

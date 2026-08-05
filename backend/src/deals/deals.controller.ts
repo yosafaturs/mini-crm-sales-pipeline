@@ -4,7 +4,6 @@ import { DealsService } from './deals.service';
 import { CreateDealDto, UpdateDealDto, UpdateDealStageDto, AssignDealDto } from './dto/deal.dto';
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
 
 @Controller('deals')
 export class DealsController {
@@ -22,7 +21,7 @@ export class DealsController {
   }
 
   @Get('export')
-  @Roles(Role.ADMIN_MANAGER)
+  @Roles('ADMIN_MANAGER')
   async exportDeals(@GetUser() user: any, @Res() res: Response) {
     const deals = await this.dealsService.findAll(user);
     
@@ -62,7 +61,7 @@ export class DealsController {
   }
 
   @Patch(':id/assign')
-  @Roles(Role.ADMIN_MANAGER)
+  @Roles('ADMIN_MANAGER')
   async assignDeal(@Param('id') id: string, @Body() dto: AssignDealDto) {
     return this.dealsService.assign(id, dto);
   }

@@ -1,5 +1,4 @@
 import { IsEmail, IsNotEmpty, MinLength, IsOptional, IsEnum } from 'class-validator';
-import { Role } from '@prisma/client';
 
 export class LoginDto {
   @IsEmail()
@@ -24,6 +23,5 @@ export class RegisterDto {
   name?: string;
 
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  role?: string;
 }
