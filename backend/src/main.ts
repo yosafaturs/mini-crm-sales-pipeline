@@ -7,9 +7,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    credentials: true,
-  });
+  origin: [
+    'https://mini-crm-sales-pipeline.vercel.app',  // Production
+    'https://mini-crm-sales-pipeline-ovmg.vercel.app',  // Preview
+    'http://localhost:3000'  // Lokal (opsional)
+  ],
+  credentials: true,
+});
 
   app.use(cookieParser());
 
