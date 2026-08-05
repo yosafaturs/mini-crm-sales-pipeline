@@ -2,10 +2,9 @@
   "name": "mini-crm-backend",
   "version": "1.0.0",
  "scripts": {
-  "start": "nest start",
-  "start:dev": "nest start --watch",
   "build": "nest build",
-  "start:prod": "node dist/main.js"   // ← TAMBAHKAN INI
+  "start": "nest start",
+  "start:prod": "node dist/main"
 },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
