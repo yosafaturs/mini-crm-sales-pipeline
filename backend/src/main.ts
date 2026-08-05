@@ -6,15 +6,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // KONFIGURASI CORS
   app.enableCors({
-  origin: [
-    'https://mini-crm-sales-pipeline.vercel.app',  // Production
-    'https://mini-crm-sales-pipeline-ovmg.vercel.app',  // Preview
-    'http://localhost:3000'  // Lokal (opsional)
-  ],
-  credentials: true,
-});
+    origin: [
+      'https://mini-crm-sales-pipeline.vercel.app',
+      'https://mini-crm-sales-pipeline-ovmg.vercel.app',
+      'http://localhost:3000'
+    ],
+    credentials: true, // WAJIB!
+  });
 
+  // COOKIE PARSER DENGAN CONFIG
   app.use(cookieParser());
 
   app.useGlobalPipes(
