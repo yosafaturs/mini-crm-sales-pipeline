@@ -17,9 +17,10 @@ export class AuthController {
     const isSecure = this.configService.get<string>('COOKIE_SECURE') === 'true';
     res.cookie('jwt', token, {
       httpOnly: true,
-      secure: isSecure,
-      sameSite: 'lax',
+      secure: false, // PASTIKAN false untuk testing (atau true jika pakai HTTPS)
+      sameSite: 'lax', // GANTI DARI 'strict'
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      domain: '.vercel.app' // TAMBAHKAN INI AGAR COOKIE DITERIMA DI SEMUA SUBDOMAIN VERCEL
     });
   }
 
